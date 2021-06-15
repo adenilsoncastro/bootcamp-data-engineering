@@ -1,0 +1,31 @@
+"""
+
+# HOW BOOTCAMPS - Data Engineering
+# CLASS 02 - SQL MODULE
+
+"""
+
+-->> Docker <<--
+https://docs.docker.com/engine/install/ubuntu/
+
+-A container manager, intended to virtualize the environment where the application is running.
+Once it is done, the application can run in any machine, regardless of the OS
+
+'docker build -t web_apache .' --> build the 'web_apache' application using the files in '.' folder
+'docker image ls' --> shows all available docker images
+'docker run -p 80:80 web_apache' --> run the web_apache image at port 80:80 (pc:container)
+'docker run -d -p 80:80 web_apache' --> run the web_apache image at port 80:80 (pc:container) and detach from terminal
+'docker ps' --> shows all images that are in execution
+'docker stop' --> stops the image execution
+
+-----------------------------------------------------------------------------------
+
+-->> Docker compose <<-- 
+sudo apt-get install docker-compose
+
+-It is a tool for definition and execution of multiple containers in Docker.
+-Uses a yaml file to define the structure
+
+'docker-compose up db' --> docker runs all the services specified, in this case, the 'db' | the '-d' option detaches from terminal
+'docker-compose down' --> remember to stop the network as well
+'docker-compose ps' --> shows all contain running
