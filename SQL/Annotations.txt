@@ -29,3 +29,277 @@ sudo apt-get install docker-compose
 'docker-compose up db' --> docker runs all the services specified, in this case, the 'db' | the '-d' option detaches from terminal
 'docker-compose down' --> remember to stop the network as well
 'docker-compose ps' --> shows all contain running
+
+------------------------------------
+
+-- Create the Billboard table
+CREATE TABLE PUBLIC."Billboard" (
+	"date" DATE NULL
+	,"rank" int4 NULL
+	,song VARCHAR(300) NULL
+	,artist VARCHAR(300) NULL
+	,"last-week" int4 NULL
+	,"peak-rank" int4 NULL
+	,"weeks-on-board" int4 NULL
+	);
+
+-- Select all the records limiting the results up to 100
+SELECT *
+FROM PUBLIC."Billboard" limit 100;
+
+-- Counts the lines in the table 
+SELECT count(*) AS quantidade
+FROM PUBLIC."Billboard";
+
+-- Select all the specified data in the table
+SELECT b."date"
+	,b."rank"
+	,b."song"
+	,b."artist"
+	,b."last-week"
+	,b."peak-rank"
+	,b."weeks-on-board"
+FROM PUBLIC."Billboard" AS b limit 100;
+
+
+-- Select only the specified artist
+SELECT b."song"
+	,b."artist"
+FROM PUBLIC."Billboard" AS b
+WHERE b.artist = 'Chuck Berry';
+
+-- Select the songs and artists, count how many times the song appears 
+-- and group the results by a a descending song order
+SELECT b."artist"
+	,b."song"
+	,count(*) AS "#song"
+FROM PUBLIC."Billboard" AS b
+WHERE b."artist" = 'Chuck Berry'
+GROUP BY b."artist"
+	,b."song"
+ORDER BY "#song" DESC;
+
+-- Fancy way to do the same query as above
+SELECT b."artist"
+	,b."song"
+	,count(*) AS "#song"
+FROM PUBLIC."Billboard" AS b
+--WHERE b."artist" = 'Chuck Berry' or b."artist" = 'Ariana Grande'
+WHERE b."artist" IN (
+		'Chuck Berry'
+		,'Ariana Grande'
+		)
+GROUP BY b."artist"
+	,b."song"
+ORDER BY "#song" DESC;
+	
+
+site: poor sql
+Learning sources:
+• Canal do Téo no Youtube: 'TeoMeWhy + SQL'
+• Khan academy (Grátis)
+• 'O curso completo de banco de dados (...)' - Udemy (27,99)
+• Dev aprender - SQL - Youtube (Grátis)
+
+---------------------------------------
+
+SELECT b."date"
+	,b."rank"
+	,b."song"
+	,b."artist"
+	,b."last-week"
+	,b."peak-rank"
+	,b."weeks-on-board"
+FROM PUBLIC."Billboard" AS b limit 100;
+
+-- Selects only the disctinc values
+select distinct 
+	b."artist"
+	,b."song"	
+FROM PUBLIC."Billboard" AS b
+order by b."artist"
+	,b."song"; 
+
+--Selects only the artits and counts how many times they appear
+select
+	b."artist"
+	,count (*) as qtd_artist
+FROM PUBLIC."Billboard" AS b
+group by b."artist"
+order by b."artist";
+
+--Selects only the songs and counts how many times they appear
+select
+	b."song"
+	,count (*) as qtd_song
+FROM PUBLIC."Billboard" AS b
+group by b."song"
+order by b."song";
+
+--selects the songs and artists, counts how many times they appear
+--by merging (left join) the tables
+
+SELECT DISTINCT b."artist"
+	,b2.qtd_artist
+	,b."song"
+	,b3.qtd_song
+FROM PUBLIC."Billboard" AS b
+LEFT JOIN (
+	SELECT b."artist"
+		,count(*) AS qtd_artist
+	FROM PUBLIC."Billboard" AS b
+	GROUP BY b."artist"
+	ORDER BY b."artist"
+	) AS b2 ON (b."artist" = b2."artist")
+LEFT JOIN (
+	SELECT b."song"
+		,count(*) AS qtd_song
+	FROM PUBLIC."Billboard" AS b
+	GROUP BY b."song"
+	ORDER BY b."song"
+	) AS b3 ON (b."song" = b3."song")
+ORDER BY b."artist"
+	,b."song";
+
+
+-- the same query as above but using CTE
+with cte_artist as (
+SELECT b."artist"
+		,count(*) AS qtd_artist
+	FROM PUBLIC."Billboard" AS b
+	GROUP BY b."artist"
+	ORDER BY b."artist"),
+	cte_song as (SELECT b."song"
+		,count(*) AS qtd_song
+	FROM PUBLIC."Billboard" AS b
+	GROUP BY b."song"
+	ORDER BY b."song")	
+SELECT DISTINCT b."artist"
+	,b2.qtd_artist
+	,b."song"
+	,b3.qtd_song
+FROM PUBLIC."Billboard" AS b
+LEFT JOIN cte_artist AS b2 ON (b."artist" = b2."artist")
+LEFT JOIN cte_song AS b3 ON (b."song" = b3."song")
+ORDER BY b."artist"
+	,b."song";
+
+
+------------------------------------------------------------------
+
+Window Function
+
+SELECT b."date"
+	,b."rank"
+	,b."song"
+	,b."artist"
+	,b."last-week"
+	,b."peak-rank"
+	,b."weeks-on-board"
+FROM PUBLIC."Billboard" AS b limit 100;
+
+SELECT DISTINCT b."artist"
+	,b."song"
+FROM PUBLIC."Billboard" AS b
+ORDER BY b."artist"
+	,b."song";
+
+SELECT b."artist"
+	,count(*) AS qtd_artist
+FROM PUBLIC."Billboard" AS b
+GROUP BY b."artist"
+ORDER BY b."artist";
+
+SELECT b."song"
+	,count(*) AS qtd_song
+FROM PUBLIC."Billboard" AS b
+GROUP BY b."song"
+ORDER BY b."song";
+
+SELECT DISTINCT b."artist"
+	,b2.qtd_artist
+	,b."song"
+	,b3.qtd_song
+FROM PUBLIC."Billboard" AS b
+LEFT JOIN (
+	SELECT b."artist"
+		,count(*) AS qtd_artist
+	FROM PUBLIC."Billboard" AS b
+	GROUP BY b."artist"
+	ORDER BY b."artist"
+	) AS b2 ON (b."artist" = b2."artist")
+LEFT JOIN (
+	SELECT b."song"
+		,count(*) AS qtd_song
+	FROM PUBLIC."Billboard" AS b
+	GROUP BY b."song"
+	ORDER BY b."song"
+	) AS b3 ON (b."song" = b3."song")
+ORDER BY b."artist"
+	,b."song";
+
+WITH cte_artist
+AS (
+	SELECT b."artist"
+		,count(*) AS qtd_artist
+	FROM PUBLIC."Billboard" AS b
+	GROUP BY b."artist"
+	ORDER BY b."artist"
+	)
+	,cte_song
+AS (
+	SELECT b."song"
+		,count(*) AS qtd_song
+	FROM PUBLIC."Billboard" AS b
+	GROUP BY b."song"
+	ORDER BY b."song"
+	)
+SELECT DISTINCT b."artist"
+	,b2.qtd_artist
+	,b."song"
+	,b3.qtd_song
+FROM PUBLIC."Billboard" AS b
+LEFT JOIN cte_artist AS b2 ON (b."artist" = b2."artist")
+LEFT JOIN cte_song AS b3 ON (b."song" = b3."song")
+ORDER BY b."artist"
+	,b."song";
+
+WITH cte_billboard
+AS (
+	SELECT DISTINCT b."artist"
+		,b."song"
+	FROM PUBLIC."Billboard" AS b
+	ORDER BY b."artist"
+		,b."song"
+	)
+SELECT *
+	,rank() OVER (
+		PARTITION BY artist ORDER BY artist
+			,song
+		) AS "rank"
+	,row_number() OVER (
+		ORDER BY artist
+			,song
+		) AS "row_number"
+	,row_number() OVER (
+		PARTITION BY artist ORDER BY artist
+			,song
+		) AS "row_number_artist"
+	,lag(song, 1) OVER (
+		PARTITION BY artist ORDER BY artist
+			,song
+		) AS "lag_song"
+	,lead(song, 1) OVER (
+		PARTITION BY artist ORDER BY artist
+			,song
+		) AS "lead_song"
+	,first_value(song) OVER (
+		PARTITION BY artist ORDER BY artist
+			,song
+		) AS "first_value"
+	,last_value(song) OVER (
+		PARTITION BY artist ORDER BY artist
+			,song range BETWEEN unbounded preceding
+				AND unbounded following
+		) AS "last_value"
+FROM cte_billboard;
