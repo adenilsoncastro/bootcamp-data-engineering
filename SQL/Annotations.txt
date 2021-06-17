@@ -303,3 +303,99 @@ SELECT *
 				AND unbounded following
 		) AS "last_value"
 FROM cte_billboard;
+
+
+---------------------------------------------------------------
+
+--> Cretes the CTE dedup table
+CREATE TABLE tb_website AS (
+	WITH cte_dedup_artist AS (
+		SELECT t1."date"
+			,t1."rank"
+			,t1.artist
+			,row_number() OVER (
+				PARTITION BY artist ORDER BY artist
+					,"date"
+				) AS dedup
+		FROM PUBLIC."Billboard" AS t1
+		ORDER BY t1.artist
+			,t1."date"
+		) SELECT t1."date"
+	,t1."rank"
+	,t1.artist FROM cte_dedup_artist AS t1 WHERE t1.dedup = 1
+	);
+
+create table tb_artist as (
+	SELECT t1."date"
+			,t1."rank"
+			,t1.artist
+			,t1.song 
+		FROM PUBLIC."Billboard" AS t1 where t1.artist='AC/DC'
+		ORDER BY t1.artist, t1.song
+			,t1."date"
+);
+
+--> Create an SQL View from the table dedup; A view is a dinamically updated 
+-- consult, where only a partition of the database table is made available
+-- which is updated everytime it is called
+
+CREATE VIEW vw_artist
+AS
+(
+	WITH cte_dedup_artist AS (
+			SELECT t1."date"
+				,t1."rank"
+				,t1.artist
+				,row_number() OVER (
+					PARTITION BY artist ORDER BY artist
+						,"date"
+					) AS dedup
+			FROM tb_artist AS t1
+			ORDER BY t1.artist
+				,t1."date"
+			)
+	SELECT t1."date"
+		,t1."rank"
+		,t1.artist
+	FROM cte_dedup_artist AS t1
+	WHERE t1.dedup = 1
+	);
+
+insert into tb_artist(
+	SELECT t1."date"
+			,t1."rank"
+			,t1.artist
+			,t1.song 
+		FROM PUBLIC."Billboard" AS t1 where t1.artist like 'Elvis%'
+		ORDER BY t1.artist, t1.song
+			,t1."date"
+);
+
+CREATE VIEW vw_song
+AS
+(
+	WITH cte_dedup_artist AS (
+			SELECT t1."date"
+				,t1."rank"
+				,t1.artist
+				,t1.song 
+				,row_number() OVER (
+					PARTITION BY artist ORDER BY artist
+						,song
+					) AS dedup
+			FROM tb_artist AS t1
+			ORDER BY t1.artist, t1.song 
+				,t1."date"
+			)
+	SELECT t1."date"
+		,t1."rank"
+		,t1.artist
+		,t1.song 
+	FROM cte_dedup_artist AS t1
+	WHERE t1.dedup = 1
+	);
+
+--------------------------------------------
+
+Metabase: docker image from website configured inside the docker compose
+password:metabase1234
