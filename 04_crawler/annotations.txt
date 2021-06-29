@@ -1,0 +1,10 @@
+"""
+
+# HOW BOOTCAMPS - Data Engineering
+# CLASS 01 - CRAWLER MODULE
+
+"""
+
+--> Selenium: Open source tool used to test web applications through the browser.
+Has support to many languages, such as C#, Java and Python.
+
