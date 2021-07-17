@@ -133,3 +133,5 @@ dmypy.json
 
 day-summary/*
 *.checkpoint
+06_testes/cambio/jenkins_home
+*.csv

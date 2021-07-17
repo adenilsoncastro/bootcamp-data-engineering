@@ -1,0 +1,4 @@
+Para todar os testes:
+python -m pytest
+
+Isso executa todos os arquivos/funções com um 'test' no nome

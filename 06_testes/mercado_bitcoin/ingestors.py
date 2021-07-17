@@ -1,10 +1,13 @@
+import sys
+sys.path.append('./mercado_bitcoin')
+
+
 from abc import ABC, abstractmethod
 import datetime
 from typing import List
 
 from writers import DataWriter
 from apis import DaySummaryApi, TradesApi
-
 
 class DataIngestor(ABC):
     def __init__(self, writer: DataWriter, coins: List[str], default_start_date: datetime.date) -> None:
@@ -26,7 +29,7 @@ class DataIngestor(ABC):
             with open(self._checkpoint_filename, 'r') as f:
                 return datetime.datetime.strptime(f.read(), '%Y-%m-%d').date()
         except FileNotFoundError:
-            return None
+            return self.default_start_date
 
     def _get_checkpoint(self):
         if not self._checkpoint:
