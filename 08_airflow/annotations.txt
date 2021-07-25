@@ -1,0 +1,6 @@
+
+#opens the terminal inside the container:
+docker exec -it *container id* bash
+
+
+
